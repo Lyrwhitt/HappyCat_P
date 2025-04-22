@@ -8,29 +8,48 @@ public class DataManager<T>
 {
     private string filePath;
 
-    public DataManager(string filePath)
+    public DataManager(string fileName)
     {
-        this.filePath = filePath;
+        string directory = Path.Combine(Application.persistentDataPath, "SaveData");
+        if (!Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        filePath = Path.Combine(directory, fileName);
     }
 
     public void SaveData(T data)
     {
-        string jsonData = JsonConvert.SerializeObject(data);
-
-        File.WriteAllText(filePath, jsonData);
+        try
+        {
+            string jsonData = JsonConvert.SerializeObject(data, Formatting.Indented);
+            File.WriteAllText(filePath, jsonData);
+            Debug.Log($"Data saved to: {filePath}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to save data: {e.Message}");
+        }
     }
 
     public T LoadData()
     {
-        if (File.Exists(filePath))
+        if (!File.Exists(filePath))
+        {
+            Debug.LogWarning($"File not found: {filePath}");
+            return Activator.CreateInstance<T>();
+        }
+
+        try
         {
             string jsonData = File.ReadAllText(filePath);
-
             return JsonConvert.DeserializeObject<T>(jsonData);
         }
-        else
+        catch (Exception e)
         {
-            return default(T);
+            Debug.LogError($"Failed to load data: {e.Message}");
+            return Activator.CreateInstance<T>();
         }
     }
 }

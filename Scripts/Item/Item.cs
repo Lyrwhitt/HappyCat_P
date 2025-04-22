@@ -25,15 +25,13 @@ public class Item
 
     private IItemStrategy SetItemStrategy(ItemSO itemData)
     {
-        switch (itemData.itemType)
+        var strategyDict = new Dictionary<ItemType, IItemStrategy>
         {
-            case ItemType.Recovery:
-                return new RecoveryItem(GameManager.Instance.player, itemData.recoveryAmount);
-            case ItemType.Miscellaneous:
-                return new MiscellaneousItem();
-            default:
-                return new MiscellaneousItem();
-        }
+            { ItemType.Recovery, new RecoveryItem(GameManager.Instance.player, itemData.recoveryAmount) },
+            { ItemType.Miscellaneous, new MiscellaneousItem() }
+        };
+    
+        return strategyDict.ContainsKey(itemData.itemType) ? strategyDict[itemData.itemType] : new MiscellaneousItem();
     }
 }
 
